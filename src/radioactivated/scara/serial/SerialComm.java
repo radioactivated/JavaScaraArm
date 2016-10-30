@@ -11,17 +11,17 @@ import java.util.Enumeration;
 /**
  * Created by gaow on 10/30/2016.
  */
-public class SerialComm {
-    SerialPort serPort;
+public class SerialComm implements SerialPortEventListener{
+    public SerialPort serPort;
 
     /**
      * A BufferedReader which will be fed by a InputStreamReader
      * converting the bytes into characters
      * making the displayed results codepage independent
      */
-    private DataInputStream input;
+    public DataInputStream input;
     /** The output stream to the port */
-    private OutputStream output;
+    public  OutputStream output;
 
     static final int baudRate = 9600; // must match on Arduino side
     static final int timeOut = 2000;
@@ -72,7 +72,8 @@ public class SerialComm {
             input = new DataInputStream(serPort.getInputStream());
             // for outputting data over the serial port.
             output = serPort.getOutputStream();
-
+            serPort.addEventListener(this);
+            serPort.notifyOnDataAvailable(true);
 
 
         } catch(Exception e) {
@@ -88,4 +89,15 @@ public class SerialComm {
         }
     }
 
+    public synchronized void serialEvent(SerialPortEvent oEvent) {
+        if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+            try {
+                String inputLine=input.readLine();
+                System.out.println(inputLine);
+            } catch (Exception e) {
+                System.err.println(e.toString());
+            }
+        }
+        // Ignore all the other eventTypes, but you should consider the other ones.
+    }
 }
